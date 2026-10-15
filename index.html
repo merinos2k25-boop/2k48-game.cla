@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>2k48</title>
+<meta name="description" content="2k48: karoları birleştir, 2048'e ulaş. Mobil uyumlu, en yüksek skor listeli 2048 oyunu.">
+<meta name="theme-color" content="#faf8ef" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#2a2521" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="2k48">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#faf8ef;--ink:#776e65;--ink2:#9c9187;--board:#bbada0;--cell:#cdc1b4;--cellin:rgba(0,0,0,.08);
+  --card:#eee4da;--line:rgba(119,110,101,.2);--btn:#8f7a66;--btnh:#7f6b59;--btni:#f9f6f2;--ov:rgba(250,248,239,.78);
+  --pane:#fffdf7;--shadow:0 10px 30px rgba(90,70,50,.16);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#2a2521;--ink:#eadfd2;--ink2:#a99d90;--board:#4b4139;--cell:#5d5148;--cellin:rgba(0,0,0,.3);
+    --card:#3a322c;--line:rgba(234,223,210,.15);--btn:#a58a70;--btnh:#b59a80;--btni:#2a2521;--ov:rgba(42,37,33,.8);
+    --pane:#332c27;--shadow:0 10px 30px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#2a2521;--ink:#eadfd2;--ink2:#a99d90;--board:#4b4139;--cell:#5d5148;--cellin:rgba(0,0,0,.3);
+  --card:#3a322c;--line:rgba(234,223,210,.15);--btn:#a58a70;--btnh:#b59a80;--btni:#2a2521;--ov:rgba(42,37,33,.8);
+  --pane:#332c27;--shadow:0 10px 30px rgba(0,0,0,.4);
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);overscroll-behavior:none;-webkit-text-size-adjust:100%}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Sora',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;min-height:100vh;min-height:100dvh;display:flex;justify-content:center;align-items:center;touch-action:manipulation;overscroll-behavior:none}
+.app{width:min(100%,460px);padding:calc(env(safe-area-inset-top,0px) + 34px) 16px calc(env(safe-area-inset-bottom,0px) + 28px)}
+header{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.logo{display:flex;flex-direction:column;gap:6px}
+.mark{display:inline-block;padding:7px 14px 8px;border-radius:12px;font-weight:800;font-size:30px;letter-spacing:-.5px;line-height:1;color:#f9f6f2;
+  background:linear-gradient(180deg,rgba(255,255,255,.28),rgba(0,0,0,.05)),#edc22e;box-shadow:0 4px 0 #c4a00a,0 8px 14px rgba(150,110,0,.25),inset 0 1px 0 rgba(255,255,255,.5);text-shadow:0 1px 0 rgba(0,0,0,.12);width:max-content}
+.tag{font-size:12px;color:var(--ink2);margin-left:2px}
+.scores{display:flex;gap:8px}
+.sbox{position:relative;min-width:74px;padding:7px 10px 8px;border-radius:10px;background:var(--board);text-align:center;color:#f9f6f2}
+.sbox small{display:block;font-size:10.5px;font-weight:500;opacity:.85}
+.sbox b{display:block;font-size:19px;font-weight:700;line-height:1.2;font-variant-numeric:tabular-nums}
+.plus{position:absolute;left:0;right:0;top:4px;font-weight:700;font-size:16px;color:var(--ink);pointer-events:none;animation:rise .7s ease-out forwards}
+@keyframes rise{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-34px)}}
+.bar{display:flex;align-items:center;justify-content:space-between;margin:16px 0 12px;gap:10px}
+.bar p{margin:0;font-size:12.5px;color:var(--ink2);line-height:1.4}
+.btns{display:flex;gap:8px}
+button{font:inherit;cursor:pointer}
+.btn{border:0;border-radius:9px;padding:9px 14px;font-size:13px;font-weight:700;background:var(--btn);color:var(--btni);box-shadow:0 3px 0 rgba(0,0,0,.18);transition:background .15s,transform .08s,box-shadow .08s}
+.btn:hover{background:var(--btnh)}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.18)}
+.btn:disabled{opacity:.4;cursor:default;transform:none;box-shadow:0 3px 0 rgba(0,0,0,.18)}
+.btn.ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 2px var(--line)}
+.btn:focus-visible{outline:3px solid #f59563;outline-offset:2px}
+.wrap{position:relative}
+.board{position:relative;padding:3%;border-radius:14px;background:var(--board);box-shadow:var(--shadow);touch-action:none;user-select:none;-webkit-user-select:none}
+.grid{position:relative;width:100%;aspect-ratio:1;container-type:inline-size}
+.cells,.tiles{position:absolute;inset:0}
+.cell{position:absolute;width:22.75%;height:22.75%;border-radius:8%;background:var(--cell);box-shadow:inset 0 .5cqw 1cqw var(--cellin)}
+.tile{position:absolute;z-index:2;width:22.75%;height:22.75%;left:calc(var(--c)*25.75%);top:calc(var(--r)*25.75%);transition:left .11s ease-in-out,top .11s ease-in-out}
+.in{width:100%;height:100%;display:grid;place-items:center;border-radius:8%;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.03em;
+  background:linear-gradient(180deg,rgba(255,255,255,.3),rgba(255,255,255,0) 45%,rgba(0,0,0,.05)),var(--tb);color:var(--tc);
+  box-shadow:0 .6cqw 0 var(--te),0 1.4cqw 2.2cqw rgba(60,40,10,.22),inset 0 .35cqw 0 rgba(255,255,255,.42)}
+.in.new{animation:appear .18s ease-out .1s backwards}
+.in.pop{animation:pop .17s ease-out}
+@keyframes appear{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes pop{50%{transform:scale(1.16)}}
+.overlay{position:absolute;inset:0;z-index:10;display:none;align-items:center;justify-content:center;border-radius:14px;background:var(--ov);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);padding:16px}
+.overlay.show{display:flex;animation:fade .25s ease-out}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.res{width:min(100%,270px);padding:16px;border-radius:14px;background:var(--pane);box-shadow:var(--shadow);text-align:center}
+.res h2{margin:0;font-size:20px;font-weight:800;color:var(--ink)}
+.res .sub{margin:3px 0 12px;font-size:12.5px;color:var(--ink2)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:14px}
+.stats div{padding:7px 2px;border-radius:9px;background:var(--card)}
+.stats small{display:block;font-size:10px;color:var(--ink2)}
+.stats b{font-size:15px;font-variant-numeric:tabular-nums}
+.res .row{display:flex;gap:8px;justify-content:center}
+.top{margin-top:18px;padding:14px;border-radius:14px;background:var(--pane);box-shadow:0 2px 10px rgba(90,70,50,.08);border:1px solid var(--line)}
+.top .hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.top h3{margin:0;font-size:14px;font-weight:700}
+.scroll{max-height:196px;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:var(--board) transparent;margin:0 -4px;padding:0 4px}
+.scroll::-webkit-scrollbar{width:6px}.scroll::-webkit-scrollbar-thumb{background:var(--board);border-radius:6px}
+.link{border:0;background:none;color:var(--ink2);font-size:12px;font-weight:700;padding:5px 10px;border-radius:8px;box-shadow:inset 0 0 0 1.5px var(--line);transition:color .15s,box-shadow .15s}
+.link:hover{color:var(--ink)}
+.link.warn{color:#d6411f;box-shadow:inset 0 0 0 1.5px #d6411f}
+.link:disabled{opacity:.4;cursor:default}
+.link:focus-visible{outline:3px solid #f59563;outline-offset:2px}
+.lt{display:flex;align-items:center;gap:10px;min-width:0}
+.btn.ico{padding:0;width:36px;height:36px;display:grid;place-items:center;flex:none}
+.top ol{list-style:none;margin:0;padding:0}
+.top li{display:grid;grid-template-columns:26px 1fr auto auto;align-items:center;gap:10px;padding:7px 8px;border-radius:9px;font-size:13px}
+.top li:nth-child(odd){background:var(--card)}
+.top li.me{box-shadow:inset 0 0 0 2px #f59563}
+.rk{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:700;background:var(--line);color:var(--ink)}
+.r1{background:#edc22e;color:#fff}.r2{background:#b4b4b4;color:#fff}.r3{background:#cd8a52;color:#fff}
+.top li b{font-variant-numeric:tabular-nums}
+.top li span{color:var(--ink2);font-size:12px}
+.empty{margin:2px 0 0;font-size:12.5px;color:var(--ink2)}
+.credit{margin:22px 0 0;text-align:center;font-size:11px;color:var(--ink2);opacity:.85;letter-spacing:.2px}
+.credit b{font-weight:700;color:var(--ink)}
+@media (max-width:380px){.app{padding:calc(env(safe-area-inset-top,0px) + 28px) 12px calc(env(safe-area-inset-bottom,0px) + 22px)}.btn.ico{width:34px;height:34px}.mark{font-size:25px;padding:6px 11px 7px}.sbox{min-width:62px;padding:6px 8px 7px}.sbox b{font-size:17px}.btn{padding:8px 11px;font-size:12.5px}.tag{font-size:11px}.top li{gap:8px;font-size:12.5px}}
+@media (max-height:640px) and (orientation:landscape){.app{width:min(100%,380px)}}
+.hint{margin:14px 0 0;text-align:center;font-size:12px;color:var(--ink2)}
+@media (prefers-reduced-motion:reduce){.tile{transition:none}.in.new,.in.pop,.plus{animation:none}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="logo"><span class="mark">2k48</span><span class="tag">Karoları birleştir, 2048'e ulaş.</span></div>
+    <div class="scores">
+      <div class="sbox" id="sb"><small>Skor</small><b id="score">0</b></div>
+      <div class="sbox"><small>En iyi</small><b id="best">0</b></div>
+    </div>
+  </header>
+  <div class="bar">
+    <div class="lt"><button class="btn ghost ico" id="snd" aria-label="Sesi aç/kapat"></button><p id="mv">0 hamle</p></div>
+    <div class="btns">
+      <button class="btn ghost" id="undo" disabled>Geri al</button>
+      <button class="btn" id="new">Yeni oyun</button>
+    </div>
+  </div>
+  <div class="wrap">
+    <div class="board" id="board">
+      <div class="grid"><div class="cells" id="cells"></div><div class="tiles" id="tiles"></div></div>
+    </div>
+    <div class="overlay" id="ov">
+      <div class="res">
+        <h2 id="ovT"></h2><p class="sub" id="ovS"></p>
+        <div class="stats"><div><small>Skor</small><b id="rS">0</b></div><div><small>En yüksek</small><b id="rT">0</b></div><div><small>Hamle</small><b id="rM">0</b></div></div>
+        <div class="row" id="ovB"></div>
+      </div>
+    </div>
+  </div>
+  <section class="top"><div class="hd"><h3>En yüksek skorlar</h3><button class="link" id="clr">Temizle</button></div><div class="scroll" id="list"></div></section>
+  <p class="hint">Ok tuşları, WASD veya kaydırma ile oyna.</p>
+  <footer class="credit">Tasarım: <b>Hakan Korkmaz</b></footer>
+</div>
+<script>
+(function(){
+  var PAL={2:['#eee4da','#776e65','#d3c6b4'],4:['#ede0c8','#776e65','#d1c1a3'],8:['#f2b179','#f9f6f2','#d98e52'],16:['#f59563','#f9f6f2','#d9733f'],
+    32:['#f67c5f','#f9f6f2','#d95f40'],64:['#f65e3b','#f9f6f2','#d6411f'],128:['#edcf72','#f9f6f2','#cdb04d'],256:['#edcc61','#f9f6f2','#cbae3d'],
+    512:['#edc850','#f9f6f2','#c9a92c'],1024:['#edc53f','#f9f6f2','#c7a51c'],2048:['#edc22e','#f9f6f2','#c4a00a']};
+  var BIG=['#3c3a32','#f9f6f2','#1f1d18'];
+  var mem={};
+  function sget(k){try{var v=localStorage.getItem(k);return v===null?(mem[k]||null):v}catch(e){return mem[k]||null}}
+  function sset(k,v){mem[k]=v;try{localStorage.setItem(k,v)}catch(e){}}
+  var $=function(i){return document.getElementById(i)};
+  var tilesEl=$('tiles'),ov=$('ov');
+  var grid,score,best,won,over,saved,busy,lock,prev,moves,lastId;
+  best=parseInt(sget('k2048_best'))||0;
+
+  /* ---- Ses (WebAudio ile üretilir, dosya gerekmez) ---- */
+  var AC=null,soundOn=sget('k2048_snd')!=='0',PENT=[0,2,4,7,9];
+  function ac(){
+    if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){return null}}
+    if(AC.state==='suspended'){try{AC.resume()}catch(e){}}
+    return AC;
+  }
+  function tone(f,d,type,vol,delay,to){
+    if(!soundOn)return;var c=ac();if(!c)return;
+    var t=c.currentTime+(delay||0),o=c.createOscillator(),g=c.createGain();
+    o.type=type;o.frequency.setValueAtTime(f,t);
+    if(to)o.frequency.exponentialRampToValueAtTime(to,t+d);
+    g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.008);g.gain.exponentialRampToValueAtTime(0.0001,t+d);
+    o.connect(g);g.connect(c.destination);o.start(t);o.stop(t+d+.03);
+  }
+  function note(v){var k=Math.max(0,Math.round(Math.log(v)/Math.LN2)-2);return 262*Math.pow(2,(PENT[k%5]+12*Math.floor(Math.min(k,14)/5))/12)}
+  function sMove(){tone(190,.07,'sine',.07,0,130)}
+  function sMerge(vals){
+    vals.sort(function(a,b){return b-a}).slice(0,2).forEach(function(v,i){
+      var f=note(v);tone(f,.24,'triangle',.09,i*.05);tone(f*2,.16,'sine',.035,i*.05);
+    });
+  }
+  function sWin(){[523,659,784,1047].forEach(function(f,i){tone(f,.28,'triangle',.1,i*.09)})}
+  function sOver(){[392,330,262,196].forEach(function(f,i){tone(f,.3,'triangle',.08,i*.14,f*.96)})}
+  function sUndo(){tone(150,.09,'sine',.07,0,240)}
+  function sNew(){tone(330,.1,'triangle',.07,0);tone(494,.14,'triangle',.07,.08)}
+  var ICON_ON='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z" fill="currentColor"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>';
+  var ICON_OFF='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z" fill="currentColor"/><path d="m16 9 5 6M21 9l-5 6"/></svg>';
+  function sndUI(){var b=$('snd');b.innerHTML=soundOn?ICON_ON:ICON_OFF;b.setAttribute('aria-pressed',String(soundOn));b.title=soundOn?'Sesi kapat':'Sesi aç'}
+
+
+  var cells=$('cells');
+  for(var i=0;i<16;i++){var d=document.createElement('div');d.className='cell';d.style.left=(i%4)*25.75+'%';d.style.top=Math.floor(i/4)*25.75+'%';cells.appendChild(d)}
+
+  function paint(t){
+    var p=PAL[t.v]||BIG,n=t.el.firstChild;
+    n.textContent=t.v;
+    n.style.setProperty('--tb',p[0]);n.style.setProperty('--tc',p[1]);n.style.setProperty('--te',p[2]);
+    n.style.fontSize=(t.v<100?8.8:t.v<1000?7.4:t.v<10000?5.8:4.6)+'cqw';
+  }
+  function pos(t){t.el.style.setProperty('--r',t.r);t.el.style.setProperty('--c',t.c)}
+  function mk(v,r,c,spawn){
+    var el=document.createElement('div');el.className='tile';el.innerHTML='<div class="in"></div>';
+    var t={v:v,r:r,c:c,el:el};pos(t);paint(t);
+    if(spawn)el.firstChild.classList.add('new');
+    tilesEl.appendChild(el);return t;
+  }
+  function spawn(){
+    var e=[];for(var r=0;r<4;r++)for(var c=0;c<4;c++)if(!grid[r][c])e.push([r,c]);
+    if(!e.length)return;
+    var p=e[Math.floor(Math.random()*e.length)];
+    grid[p[0]][p[1]]=mk(Math.random()<.9?2:4,p[0],p[1],true);
+  }
+  function canMove(){
+    for(var r=0;r<4;r++)for(var c=0;c<4;c++){
+      var t=grid[r][c];if(!t)return true;
+      if(c<3&&grid[r][c+1]&&grid[r][c+1].v===t.v)return true;
+      if(r<3&&grid[r+1][c]&&grid[r+1][c].v===t.v)return true;
+    }
+    return false;
+  }
+  function maxTile(){var m=0;for(var r=0;r<4;r++)for(var c=0;c<4;c++)if(grid[r][c]&&grid[r][c].v>m)m=grid[r][c].v;return m}
+  function hud(gain){
+    $('score').textContent=score;$('best').textContent=best;
+    $('mv').textContent=moves+' hamle';
+    $('undo').disabled=!prev||over||lock;
+    if(gain){var s=document.createElement('span');s.className='plus';s.textContent='+'+gain;$('sb').appendChild(s);setTimeout(function(){s.remove()},700)}
+  }
+  function scores(){try{return JSON.parse(sget('k2048_scores'))||[]}catch(e){return[]}}
+  function renderList(){
+    var l=scores(),box=$('list');$('clr').disabled=!l.length;
+    if(!l.length){box.innerHTML='<p class="empty">Henüz skor yok. Bir oyunu bitir, burada görünsün.</p>';return}
+    var h='<ol>';
+    l.forEach(function(e,i){
+      var dt=new Date(e.d).toLocaleDateString('tr-TR',{day:'numeric',month:'short'});
+      h+='<li'+(e.id===lastId?' class="me"':'')+'><i class="rk'+(i<3?' r'+(i+1):'')+'" style="font-style:normal">'+(i+1)+'</i><b>'+e.s.toLocaleString('tr-TR')+'</b><span>'+e.m+'</span><span>'+dt+'</span></li>';
+    });
+    box.innerHTML=h+'</ol>';
+    var me=box.querySelector('.me');if(me)box.scrollTop+=me.getBoundingClientRect().top-box.getBoundingClientRect().top-8;
+  }
+  function saveScore(){
+    if(saved||score<=0)return 0;
+    saved=true;
+    var l=scores(),e={id:Date.now()+'-'+Math.floor(Math.random()*1e4),s:score,m:maxTile(),d:Date.now()};
+    l.push(e);l.sort(function(a,b){return b.s-a.s});
+    var rank=l.findIndex(function(x){return x.id===e.id})+1;
+    l=l.slice(0,50);sset('k2048_scores',JSON.stringify(l));
+    lastId=rank<=50?e.id:null;renderList();return rank;
+  }
+  function showOv(type){
+    lock=true;
+    var rank=type==='over'?saveScore():0;
+    $('ovT').textContent=type==='win'?'2048’e ulaştın!':'Oyun bitti';
+    var sub=type==='win'?'Devam edip daha yükseğe çıkabilirsin.':(rank===1?'Yeni rekor!':rank&&rank<=50?'Sıralamada '+rank+'. oldun.':'Skorların arasına giremedi.');
+    $('ovS').textContent=sub;
+    $('rS').textContent=score.toLocaleString('tr-TR');$('rT').textContent=maxTile();$('rM').textContent=moves;
+    $('ovB').innerHTML=type==='win'?'<button class="btn ghost" id="b1">Yeni oyun</button><button class="btn" id="b2">Devam et</button>':'<button class="btn" id="b2">Tekrar oyna</button>';
+    if(type==='win'){$('b1').onclick=newGame;$('b2').onclick=function(){ov.classList.remove('show');lock=false;hud()}}
+    else $('b2').onclick=newGame;
+    ov.classList.add('show');hud();
+  }
+  function newGame(){
+    if(!saved&&score>0&&!over)saveScore();
+    tilesEl.innerHTML='';ov.classList.remove('show');
+    grid=[];for(var r=0;r<4;r++)grid.push([null,null,null,null]);
+    score=0;won=false;over=false;saved=false;busy=false;lock=false;prev=null;moves=0;lastId=null;
+    spawn();spawn();hud();renderList();
+  }
+  function undo(){
+    if(!prev||busy||lock||over)return;
+    tilesEl.innerHTML='';
+    grid=[];for(var r=0;r<4;r++){grid.push([null,null,null,null]);for(var c=0;c<4;c++)if(prev.g[r][c])grid[r][c]=mk(prev.g[r][c],r,c,false)}
+    score=prev.s;moves=Math.max(0,moves-1);prev=null;sUndo();hud();
+  }
+  function move(dir){
+    if(busy||over||lock)return;
+    var v={up:[-1,0],down:[1,0],left:[0,-1],right:[0,1]}[dir],dr=v[0],dc=v[1];
+    var rs=[0,1,2,3],cs=[0,1,2,3];if(dr===1)rs.reverse();if(dc===1)cs.reverse();
+    var snap={g:grid.map(function(row){return row.map(function(t){return t?t.v:0})}),s:score};
+    var moved=false,gain=0,merged=[],dead=[];
+    rs.forEach(function(r){cs.forEach(function(c){
+      var t=grid[r][c];if(!t)return;
+      var nr=r,nc=c;
+      for(;;){var xr=nr+dr,xc=nc+dc;if(xr<0||xr>3||xc<0||xc>3||grid[xr][xc])break;nr=xr;nc=xc}
+      var xr=nr+dr,xc=nc+dc,o=(xr>=0&&xr<4&&xc>=0&&xc<4)?grid[xr][xc]:null;
+      if(o&&o.v===t.v&&merged.indexOf(o)<0){
+        grid[r][c]=null;t.r=xr;t.c=xc;t.el.style.zIndex=1;pos(t);
+        o.v*=2;gain+=o.v;merged.push(o);dead.push(t);moved=true;
+      }else if(nr!==r||nc!==c){
+        grid[r][c]=null;grid[nr][nc]=t;t.r=nr;t.c=nc;pos(t);moved=true;
+      }
+    })});
+    if(!moved)return;
+    busy=true;prev=snap;moves++;score+=gain;
+    sMove();if(merged.length)sMerge(merged.map(function(o){return o.v}));
+    if(score>best){best=score;sset('k2048_best',String(best))}
+    hud(gain);
+    setTimeout(function(){
+      dead.forEach(function(t){t.el.remove()});
+      merged.forEach(function(o){var n=o.el.firstChild;paint(o);n.classList.remove('new','pop');void n.offsetWidth;n.classList.add('pop')});
+      spawn();busy=false;
+      var hit=!won&&merged.some(function(o){return o.v===2048});
+      if(!canMove()){over=true;sOver();showOv('over')}
+      else if(hit){won=true;sWin();showOv('win')}
+      else hud();
+    },115);
+  }
+  document.addEventListener('keydown',function(e){
+    var m={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',w:'up',s:'down',a:'left',d:'right',W:'up',S:'down',A:'left',D:'right'}[e.key];
+    if(!m||e.ctrlKey||e.metaKey||e.altKey)return;
+    e.preventDefault();move(m);
+  });
+  var sx,sy,board=$('board');
+  board.addEventListener('touchstart',function(e){if(e.touches.length>1)return;sx=e.touches[0].clientX;sy=e.touches[0].clientY},{passive:true});
+  board.addEventListener('touchmove',function(e){e.preventDefault()},{passive:false});
+  board.addEventListener('touchend',function(e){
+    if(sx==null)return;var t=e.changedTouches[0],dx=t.clientX-sx,dy=t.clientY-sy;sx=null;
+    if(Math.max(Math.abs(dx),Math.abs(dy))<24)return;
+    move(Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up'));
+  },{passive:true});
+  var md=null;
+  board.addEventListener('pointerdown',function(e){if(e.pointerType==='mouse')md=[e.clientX,e.clientY]});
+  window.addEventListener('pointerup',function(e){
+    if(!md||e.pointerType!=='mouse')return;var dx=e.clientX-md[0],dy=e.clientY-md[1];md=null;
+    if(Math.max(Math.abs(dx),Math.abs(dy))<30)return;
+    move(Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up'));
+  });
+  $('new').onclick=function(){newGame();sNew()};$('undo').onclick=undo;
+  $('snd').onclick=function(){soundOn=!soundOn;sset('k2048_snd',soundOn?'1':'0');sndUI();if(soundOn)sNew()};
+  var ct=null,clr=$('clr');
+  clr.onclick=function(){
+    if(!clr.classList.contains('warn')){
+      clr.classList.add('warn');clr.textContent='Emin misin?';
+      ct=setTimeout(function(){clr.classList.remove('warn');clr.textContent='Temizle'},3000);return;
+    }
+    clearTimeout(ct);clr.classList.remove('warn');clr.textContent='Temizle';
+    sset('k2048_scores','[]');lastId=null;best=score;sset('k2048_best',String(best));hud();renderList();
+  };
+  document.addEventListener('pointerdown',function(){ac()},{once:true});
+  sndUI();
+  window.addEventListener('pagehide',function(){if(!saved&&score>0)saveScore()});
+  newGame();
+})();
+</script>
+</body>
+</html>
