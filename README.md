@@ -11,7 +11,10 @@ Statik site: derleme adımı yok.
 
 ## Dosyalar
 - `index.html`: oyunun tamamı (HTML, CSS, JS)
-- `favicon.svg`: site ve ana ekran ikonu
+- `favicon.svg`, `favicon-32.png`: tarayıcı sekmesi ikonu
+- `apple-touch-icon.png`: iPhone ana ekran ikonu
+- `icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, `manifest.webmanifest`: Android ana ekran / uygulama olarak yükleme
+- `icon.svg`: logonun vektör hali
 - `vercel.json`: güvenlik başlıkları ve temiz URL ayarı
 
 Skorlar (en fazla 50) ve ses tercihi ziyaretçinin tarayıcısında (localStorage) tutulur. Sesler WebAudio ile üretilir, ses dosyası yoktur.
